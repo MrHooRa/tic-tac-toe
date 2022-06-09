@@ -1,3 +1,7 @@
+# Made by:
+# Omar Alanazi - Salamn Alessa
+
+from copy import copy
 import random
 import time
 
@@ -46,15 +50,12 @@ def isWinner(player, board):
 
 def checkPosition(position, board):
     """Return True if position is valid. False otherwise"""
-    return True if 0 <= position <= 8 and board[position] == " " else False
+    return 0 <= position <= 8 and board[position] == " "
 
 def isBoardFull(board):
     """Return True if board is full. False otherwise"""
 
-    for i in range(len(board)):
-        if board[i] == " ":
-            return False
-    return True
+    return all(board[i] != " " for i in range(len(board)))
 
 def clearBoard():
     """Return an empty board"""
@@ -63,7 +64,7 @@ def clearBoard():
 def intro():
     """Print the intro for the TicTacToe Game"""
 
-    print("Welcome to TicTacToe Game.\nNOTE: to chose where to play write the number of the box. As following:")
+    print("Welcome to TicTacToe Game.\nNOTE: to choose where to play write the number of the box. As following:")
     print(f"""    
          |     |     
       1  |  2  |  3 
@@ -84,7 +85,7 @@ def move(player, position, board):
         if checkPosition(int(position)-1, board):
             board[int(position)-1] = player
             return True
-    except:
+    except Exception:
         return False
     return False
         
@@ -92,7 +93,7 @@ def isGameFinish(player, board):
     """Check if the game finish under two condition. Player wins or board is full (Tie game). If the game finish
     will return the answer of the user to continue playing or not (Answer = [yes, y, no, n])"""
 
-    finish = True if isWinner(player, board) else False
+    finish = bool(isWinner(player, board))
     if finish:
         print(f"GG the Winner is {player}!")
                 
@@ -103,7 +104,7 @@ def isGameFinish(player, board):
     if finish:
         while True:
             answer = input("Want to play again? (YES/NO): ").lower()
-            if not(answer == "n" or answer == "no" or answer == "y" or answer == "yes"):
+            if answer not in ["n", "no", "y", "yes"]:
                 print("ERROR: Please enter a valid option. Try again")
             else:
                 break
@@ -135,30 +136,29 @@ def calculateAllMoves(board, isMax, depth):
         return -10
     if isBoardFull(board):
         return 0
-        
+
+    scoresList = []
     if isMax:
-        scoresList = []
-        for possibleMove in allPossibleMoves([i for i in board]):
-            copyBoard = [i for i in board]
+        for possibleMove in allPossibleMoves(list(board)):
+            copyBoard = list(board)
             if move("o", possibleMove+1, copyBoard):
                 scoresList.append([calculateAllMoves(copyBoard, False, depth+1), possibleMove])
-                
+
         if depth == 0:
             maxValue = [-100, -100]
             for score in scoresList:
                 if score[0] > maxValue[0]:
                     maxValue[0], maxValue[1] = score[0], score[1]
             return maxValue[1]
-        
-        return max([score[0] for score in scoresList])
+
+        return max(score[0] for score in scoresList)
 
     else:
-        scoresList = []
-        for possibleMove in allPossibleMoves([i for i in board]):
-            copyBoard = [i for i in board]
+        for possibleMove in allPossibleMoves(list(board)):
+            copyBoard = list(board)
             if move("x", possibleMove+1, copyBoard):
                 scoresList.append([calculateAllMoves(copyBoard, True, depth+1), possibleMove])
-                
+
         if depth == 0:            
             minValue = [100, 100]
             for score in scoresList:
@@ -166,12 +166,12 @@ def calculateAllMoves(board, isMax, depth):
                     minValue[0], minValue[1] = score[0], score[1]
             return minValue[1]
 
-        return min([score[0] for score in scoresList])
+        return min(score[0] for score in scoresList)
     
 def ChooseDifficlty():
     while True:
-        answer = input("Choose Difficlty (Eazy/Impossible): ").lower()
-        if answer == "eazy" or answer == "impossible":
+        answer = input("Choose Difficlty (Easy/Impossible): ").lower()
+        if answer in ["easy", "impossible"]:
             return answer
         else:
             print("ERROR: invalid option. Please try again")
@@ -190,7 +190,7 @@ def main():
     intro()
     difficulty = ChooseDifficlty()
     printBoard(board) 
-     
+
     #Start the game
     while True:
 
@@ -207,10 +207,10 @@ def main():
 
         #Check if it's the game finish or not after X turn. If it's finish ask the player if he want to play again
         answer = isGameFinish("x", board)
-        if answer == "n" or answer == "no":
+        if answer in ["n", "no"]:
             print("Thanks for playing :D")
-            break   
-        if answer == "y" or answer == "yes":
+            break
+        if answer in ["y", "yes"]:
             difficulty = ChooseDifficlty()
             board = clearBoard()
             printBoard(board)
@@ -219,7 +219,7 @@ def main():
         delay()
 
         #AI turn (O player)
-        if difficulty == "eazy":
+        if difficulty == "easy":
             easyAI(board)
         elif difficulty == "impossible":    
             impossibleAI(board)
@@ -228,11 +228,11 @@ def main():
 
         #Check if it's the game finish or not after O turn. If it's finish ask the player if he want to play again
         answer = isGameFinish("o", board)
-        if answer == "n" or answer == "no":
+        if answer in ["n", "no"]:
             print("Thanks for playing :D")
             break
 
-        if answer == "y" or answer == "yes":
+        if answer in ["y", "yes"]:
             difficulty = ChooseDifficlty()
             print("Game Started Again:")
             board = clearBoard()
